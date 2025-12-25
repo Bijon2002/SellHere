@@ -13,9 +13,21 @@ exports.getProducts= async (req,res,next)=>{
     });
 }
 //get single product api - /api/v1/products/:id
-exports.getSingleProducts=(req,res,next)=>{
+exports.getSingleProducts=async(req,res,next)=>{
+
+    try{
+
+  const product = await productModel.findById(req.params.id);
+
     res.status(200).json({
         success:true,
-        message:"get single product is working fine"
+        product
     });
+}
+    catch(error){
+        res.status(404).json({
+            success:false,  
+            message:error.message
+        });
+    }
 }
