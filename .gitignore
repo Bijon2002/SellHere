@@ -14,3 +14,6 @@ Thumbs.db
 
 # Optional: VSCode settings
 .vscode/
+
+# fontend node modules
+Frontend/node_modules/
