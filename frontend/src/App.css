@@ -40,7 +40,6 @@
 
 /* ecommerce cutom css */
 
-
 html,
 body {
   font-family: 'Amazon Ember';
@@ -70,8 +69,11 @@ body {
 }
 
 nav {
-  background-color: #232f3e;
+  background-color: #73152e;
   padding: 1rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 #search_btn {
@@ -79,13 +81,15 @@ nav {
 }
 
 .input-group {
-  width: 90%;
-  margin-right: 35%;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 #search_field {
   height: 2.4rem;
   padding: 1rem;
+  
 }
 
 #login_btn,
@@ -159,9 +163,10 @@ nav {
 /* Footer */
 footer {
   margin-top: 8rem;
-  color: grey;
+  color: rgb(209, 201, 201);
   bottom: 0;
   width: 100%;
+  background-color: #73152e;
 }
 
 /* Ratings */
