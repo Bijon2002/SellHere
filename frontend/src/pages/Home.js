@@ -7,6 +7,12 @@ export default function Home() {
     const [products,setProducts]=useState([]);
 
     useEffect(()=>{
+        fetch(process.env.REACT_APP_API_URL + '/products')
+        .then(res=>res.json())
+        .then(res => setProducts(res))
+
+    },[])
+
 
     return <Fragment>
     
