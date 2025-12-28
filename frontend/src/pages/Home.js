@@ -9,7 +9,7 @@ export default function Home() {
     useEffect(()=>{
         fetch(process.env.REACT_APP_API_URL + '/products')
         .then(res=>res.json())
-        .then(res => setProducts(res))
+        .then(res => setProducts(res.products))
 
     },[])
 
@@ -21,8 +21,16 @@ export default function Home() {
     <section id="products" className="container mt-5">
       <div className="row">
       
+      {products.map(product=><ProductCard product={product}/>)}
 
-      <ProductCard />
+
+{/* //Home = parent component
+//ProductCard = child component
+product = prop name
+// product = value being passed
+#props = the object that holds all passed values
+ */}
+
         
       </div>
     </section>

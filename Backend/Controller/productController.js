@@ -2,8 +2,14 @@ const productModel = require('../models/productModel');
 
 //get products api - /api/v1/products
 exports.getProducts= async (req,res,next)=>{
+    // if keyword is present  it uese the filter and find the product else it returns all products
+  let query=  req.query.keyword?{name:{
+    $regex:req.query.keyword,
+    $options:'i'   
+    // makeing it case insensitive
+}}:{};
 
-   const products = await productModel.find({});
+   const products = await productModel.find(query);
 
 
 
