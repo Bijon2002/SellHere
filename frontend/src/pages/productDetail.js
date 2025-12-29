@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 export default function ProductDetail({cartItems,setCartItems}) {
 
@@ -25,6 +26,7 @@ export default function ProductDetail({cartItems,setCartItems}) {
        if(!existingItem){
          const newItem ={product,qty};
         setCartItems((state)=>[...state,newItem]);
+        toast.success("Item added to cart");
        }
 
 
