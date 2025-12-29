@@ -20,10 +20,17 @@ export default function ProductDetail({cartItems,setCartItems}) {
 
 
        function addtoCart(){
-
-
-        const newItem ={product,qty};
+       const existingItem = cartItems.find(item=>item.product._id === product._id)
+    
+       if(!existingItem){
+         const newItem ={product,qty};
         setCartItems((state)=>[...state,newItem]);
+       }
+
+
+
+
+       
 
 
    
