@@ -2,7 +2,47 @@ import { Fragment } from "react/jsx-runtime";
 import {Link} from 'react-router-dom';
 
 
-export default function Cart({cartItems,SetCartItems}) {
+export default function Cart({cartItems,setCartItems}) {
+
+       function increaseQty(item){
+        if(item.product.stock == item.qty)
+            { return;
+            }
+            const updatedItems = cartItems.map((i)=>{
+                if(i.product._id == item.product._id){
+                    i.qty +=1;
+                }
+                return i;
+
+       })
+        
+
+       setCartItems(updatedItems)
+    }
+
+    //    function decreaseQty(){
+    //     if(qty>1){
+    //         setQty((prevQty)=>prevQty-1);
+    //     }   
+    //    }
+
+    function decreaseQty(item){
+        if(item.product.stock > 1)
+            { return;
+            }
+            const updatedItems = cartItems.map((i)=>{
+                if(i.product._id == item.product._id){
+                    i.qty -=1;
+                }
+                return i;
+         })
+     
+
+       setCartItems(updatedItems)
+        }
+
+
+
     return (
 
          <div className="container container-fluid">
@@ -32,10 +72,10 @@ export default function Cart({cartItems,SetCartItems}) {
 
                         <div className="col-4 col-lg-3 mt-4 mt-lg-0">
                             <div className="stockCounter d-inline">
-                                <span className="btn btn-danger minus">-</span>
+                                <span className="btn btn-danger minus" onClick={() => decreaseQty(item)}>-</span>
                                 <input type="number" className="form-control count d-inline" value={item.qty} readOnly />
 
-								<span className="btn btn-primary plus">+</span>
+								<span className="btn btn-primary plus" onClick={() => increaseQty(item)}>+</span>
                             </div>
                         </div>
 
