@@ -1,31 +1,39 @@
-export default function Cart() {
+import { Fragment } from "react/jsx-runtime";
+import {Link} from 'react-router-dom';
+
+
+export default function Cart({cartItems,SetCartItems}) {
     return (
 
          <div className="container container-fluid">
-        <h2 className="mt-5">Your Cart: <b>2 items</b></h2>
+        <h2 className="mt-5">Your Cart: <b>{cartItems.length}</b></h2>
         
         <div className="row d-flex justify-content-between">
             <div className="col-12 col-lg-8">
+
+                {cartItems.map((item )=> (
+                <Fragment>
                 <hr />
                 <div className="cart-item">
                     <div className="row">
                         <div className="col-4 col-lg-3">
-                            <img src="./images/products/1.jpg" alt="Laptop" height="90" width="115"/>
+                            <img src={item.product.images[0].image} alt={item.product.name}  height="90" width="115"/>
+                            
                         </div>
 
                         <div className="col-5 col-lg-3">
-                            <a href="#">OPPO F21s Pro 5G (Dawnlight Gold, 8GB RAM, 128 Storage) with No Cost EMI/Additional Exchange Offers</a>
+                             <Link to={"/product/"+item.product._id}>{item.product.name}</Link>
                         </div>
 
 
                         <div className="col-4 col-lg-2 mt-4 mt-lg-0">
-                            <p id="card_item_price">$245.67</p>
+                            <p id="card_item_price">{item.product.price}</p>
                         </div>
 
                         <div className="col-4 col-lg-3 mt-4 mt-lg-0">
                             <div className="stockCounter d-inline">
                                 <span className="btn btn-danger minus">-</span>
-                                <input type="number" className="form-control count d-inline" value="1" readOnly />
+                                <input type="number" className="form-control count d-inline" value={item.qty} readOnly />
 
 								<span className="btn btn-primary plus">+</span>
                             </div>
@@ -37,7 +45,11 @@ export default function Cart() {
 
                     </div>
                 </div>
+                </Fragment>)
+                )}
+
                 <hr />
+             
             </div>
 
             <div className="col-12 col-lg-3 my-4">
