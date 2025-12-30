@@ -41,10 +41,25 @@ export default function Cart({cartItems,setCartItems}) {
        setCartItems(updatedItems)
         }
 
+        function removeItem(item){
+
+            const updatedItems = cartItems.filter((i)=> 
+            {
+                 if(i.product._id !== item.product._id)
+                 {
+                    return true
+                 }
+            })
+
+       setCartItems(updatedItems)
+
+    }
+
 
 
     return (
 
+     cartItems.length > 0 ?    <Fragment>
          <div className="container container-fluid">
         <h2 className="mt-5">Your Cart: <b>{cartItems.length}</b></h2>
         
@@ -80,7 +95,7 @@ export default function Cart({cartItems,setCartItems}) {
                         </div>
 
                         <div className="col-4 col-lg-1 mt-4 mt-lg-0">
-                            <i id="delete_cart_item" className="fa fa-trash btn btn-danger"></i>
+                            <i id="delete_cart_item" onClick={() => removeItem(item)} className="fa fa-trash btn btn-danger"></i>
                         </div>
 
                     </div>
@@ -105,6 +120,7 @@ export default function Cart({cartItems,setCartItems}) {
             </div>
         </div>
     </div>
+        </Fragment> : <h2>Your Cart is Empty</h2>
 
     )
 }
