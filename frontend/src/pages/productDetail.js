@@ -38,6 +38,19 @@ export default function ProductDetail({cartItems,setCartItems}) {
    
        }
 
+       function increaseQty(){
+        if(product.stock == qty)
+            { return;
+            }
+        setQty((prevQty)=>prevQty+1);
+       }
+
+       function decreaseQty(){
+        if(qty>1){
+            setQty((prevQty)=>prevQty-1);
+        }   
+       }
+
 
 
 
@@ -51,7 +64,8 @@ return ( product &&
             <div className="col-12 col-lg-5 mt-5">
                 <h3>{product.name}</h3>
                 <p id="product_id">Product # {product._id}</p>
-             
+
+
                 <hr/>
 
                       <div className="ratings mt-auto">
@@ -63,13 +77,13 @@ return ( product &&
 
                 <p id="product_price">{product.price}.00</p>
                 <div className="stockCounter d-inline">
-                    <span className="btn btn-danger minus">-</span>
+                    <span className="btn btn-danger minus" onClick={decreaseQty}>-</span>
 
                     <input type="number" className="form-control count d-inline" value={qty} readOnly />
 
-                    <span className="btn btn-primary plus">+</span>
+                    <span className="btn btn-primary plus" onClick={increaseQty}>+</span>
                 </div>
-                 <button type="button" onClick={addtoCart} id="cart_btn" className="btn btn-primary d-inline ml-4">Add to Cart</button>
+                 <button type="button" onClick={addtoCart} disabled={product.stock ==0} id="cart_btn" className="btn btn-primary d-inline ml-4">Add to Cart</button>
 
                 <hr/>
 
