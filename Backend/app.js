@@ -8,6 +8,9 @@ const connectDatabase = require('./Config/connectDatabase');
 
 const products = require('./Routes/product');
 const orders = require('./Routes/order');
+const authRoutes = require('./Routes/authRoutes');
+
+
 
 connectDatabase();
 
@@ -15,6 +18,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/api/v1', products);
 app.use('/api/v1', orders); 
+app.use('/api/auth', authRoutes);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode.`);
