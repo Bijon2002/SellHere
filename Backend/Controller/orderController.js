@@ -1,43 +1,98 @@
 const orderModel = require('../models/orderModel');
 const productModel = require('../models/productModel');
 
-
-
-//create order api - /api/v1/order
-exports.createOrder=async(req,res,next)=>{
-
-
+/**
+ * @desc    Create new order
+ * @route   POST /api/v1/order
+ * @access  Authenticated User
+ */
+exports.createOrder = async (req, res) => {
+  try {
     const CartItems = req.body.CartItems;
-    const amount = CartItems.reduce((acc, item) => (acc + item.product.price * item.qty), 0);
-    // console.log(amount, 'AMOUNT');
 
-    const status = "pending";
-    const createdAt = Date.now();
+    const amount = CartItems.reduce(
+      (acc, item) => acc + item.product.price * item.qty,
+      0
+    );
 
     const order = await orderModel.create({
-        CartItems,
-        amount,
-        status,
-        createdAt
-        //createdAt:Date.now()
+      CartItems,
+      amount,
+      status: 'pending',
+      createdAt: Date.now()
     });
 
-    //updating product stock
- // updating product stock
-CartItems.forEach(async (item) => {
-    const product = await productModel.findById(item.product._id);
-    product.stock = product.stock - item.qty;
-    await product.save();
-});
+    // Update product stock
+    for (const item of CartItems) {
+      const product = await productModel.findById(item.product._id);
 
+      if (product) {
+        product.stock -= item.qty;
+        await product.save();
+      }
+    }
 
-
-
-
-
-
-    res.json({
-        success:true,
-        order
+    res.status(201).json({
+      success: true,
+      order
     });
-}
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get all orders
+ * @route   GET /api/v1/order
+ * @access  Admin
+ */
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find();
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Update order status
+ * @route   PATCH /api/v1/order/:id/status
+ * @access  Admin
+ */
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const order = await orderModel.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    order.status = req.body.status;
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      order
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

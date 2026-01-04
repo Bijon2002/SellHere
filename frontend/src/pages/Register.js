@@ -8,8 +8,7 @@ export default function Register() {
     email: "",
     password: "",
     dob: "",
-    phone: "",
-    profilePic: ""
+    phone: ""
   });
 
   const navigate = useNavigate();
@@ -26,14 +25,17 @@ export default function Register() {
       return;
     }
 
+    
+
+
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/register",
+        process.env.REACT_APP_API_URL + '/auth/register',
         form
       );
 
       localStorage.setItem("userInfo", JSON.stringify(data));
-      navigate("/");
+      navigate("/user/dashboard");
     } catch (err) {
       alert(err.response?.data?.message || "Register failed");
     }
@@ -57,9 +59,6 @@ export default function Register() {
         </div>
         <div className="form-group mb-3">
           <input name="phone" className="form-control" placeholder="Phone" onChange={changeHandler} />
-        </div>
-        <div className="form-group mb-3">
-          <input name="profilePic" className="form-control" placeholder="Profile Pic URL" onChange={changeHandler} />
         </div>
         <button type="submit" className="btn btn-block w-100">Register</button>
         <div className="text-center mt-3">
