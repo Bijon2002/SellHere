@@ -53,8 +53,7 @@ exports.getProducts = async (req, res) => {
     const products = await Product.find(query)
       .sort(sort)
       .skip(skip)
-      .limit(limit)
-      .populate('createdBy', 'name email');
+      .limit(limit);
     
     // Get total count for pagination info
     const total = await Product.countDocuments(query);
@@ -83,9 +82,7 @@ exports.getProducts = async (req, res) => {
  */
 exports.getSingleProducts = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .populate('createdBy', 'name email')
-      .populate('reviews.user', 'name email');
+    const product = await Product.findById(req.params.id);
     
     if (!product) {
       return res.status(404).json({

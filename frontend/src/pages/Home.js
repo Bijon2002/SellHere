@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from "react"
 import ProductCard from "../components/ProductCard"
-import { use } from "react"
+//import { use } from "react"
 import { useSearchParams } from "react-router-dom"
 
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
     useEffect(()=>{
         fetch(process.env.REACT_APP_API_URL + '/products?'+searchParams)
         .then(res=>res.json())
-        .then(res => setProducts(res.products))
+        .then(res => setProducts(res.products || []))
 
     },[searchParams])
 
@@ -23,7 +23,7 @@ export default function Home() {
     <section id="products" className="container mt-5">
       <div className="row">
       
-      {products.map(product => <ProductCard key={product._id} product={product} />)}
+      {products && products.map(product => <ProductCard key={product._id} product={product} />)}
 
 
 {/* //Home = parent component

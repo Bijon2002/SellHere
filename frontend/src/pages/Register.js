@@ -30,7 +30,7 @@ export default function Register() {
 
     try {
       const { data } = await axios.post(
-        process.env.REACT_APP_API_URL + '/auth/register',
+       `${ process.env.REACT_APP_API_URL }/auth/register`,
         form
       );
 

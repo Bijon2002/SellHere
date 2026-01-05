@@ -67,7 +67,7 @@ function placeOrderHandler() {
         0
     );
 
-    fetch(process.env.REACT_APP_API_URL + "/order", {
+    fetch(process.env.REACT_APP_API_URL + "/orders", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

@@ -16,8 +16,8 @@ connectDatabase();
 
 app.use(express.json());
 app.use(cors());
-app.use('/api/v1', products);
-app.use('/api/v1', orders); 
+app.use('/api/v1/products', products);
+app.use('/api/v1/orders', orders); 
 app.use('/api/v1/auth', authRoutes);
 
 app.listen(process.env.PORT, () => {
