@@ -21,6 +21,28 @@ export default function ProductDetail({cartItems,setCartItems}) {
 
 
        function addtoCart(){
+
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const accessToken = localStorage.getItem("accessToken");
+  const isAuthenticated = !!(userInfo && accessToken);
+
+  if (!isAuthenticated) {
+    // Show toast
+    toast.warning("Please login to add items to cart");
+
+    // Save intended path for after login
+    localStorage.setItem("redirectAfterLogin", window.location.pathname);
+
+    // Optional: redirect after 1.5s
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1500);
+
+    return; // stop function
+  }
+
+
+
        const existingItem = cartItems.find(item=>item.product._id === product._id)
     
        if(!existingItem){

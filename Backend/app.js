@@ -10,6 +10,12 @@ const products = require('./Routes/product');
 const orders = require('./Routes/order');
 const authRoutes = require('./Routes/authRoutes');
 
+// const adminSetup = require('./Routes/adminSetup');
+// app.use('/api/v1/admin',adminSetup);
+
+const adminRoutes = require('./Routes/adminRoutes');
+app.use('/api/v1/admin', adminRoutes);
+
 
 
 connectDatabase();

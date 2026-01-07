@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import API from "../api/axiosConfig";  // Updated import
+import API from "../api/axiosConfig";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -24,25 +25,24 @@ export default function Login() {
 
     // Validation
     if (!form.email || !form.password) {
-      alert("Please enter both email and password");
+      toast.error("Please enter both email and password");
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
-      alert("Please enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Use API instead of axios directly
       const { data } = await API.post('/auth/login', form);
 
       if (data.success) {
-        // Save BOTH tokens and user info
+        // Save tokens and user info
         localStorage.setItem("accessToken", data.data.accessToken);
         localStorage.setItem("refreshToken", data.data.refreshToken);
         localStorage.setItem("userInfo", JSON.stringify({
@@ -54,38 +54,43 @@ export default function Login() {
           isActive: data.data.isActive
         }));
 
-        // If remember me is checked, also save to localStorage (or cookies for longer)
+        // Remember Me
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", form.email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
 
-        alert(`✅ Welcome back, ${data.data.name}!`);
-        navigate("/");
+        // ========== REDIRECT LOGIC ==========
+        const redirectPath = localStorage.getItem("redirectAfterLogin") 
+          || (data.data.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+        localStorage.removeItem("redirectAfterLogin");
+
+        toast.success(`✅ Welcome ${data.data.name}! Redirecting...`);
+        navigate(redirectPath);
+
       } else {
-        alert(data.message || "Login failed");
+        toast.error(data.message || "Login failed");
       }
     } catch (err) {
       console.error("Login error:", err);
-      
-      // Show specific error messages
+
       if (err.response?.data?.message) {
-        alert(err.response.data.message);
+        toast.error(err.response.data.message);
       } else if (err.message.includes("Network Error")) {
-        alert("Cannot connect to server. Please check if backend is running.");
+        toast.error("Cannot connect to server. Please check if backend is running.");
       } else if (err.response?.status === 401) {
-        alert("Invalid email or password. Please try again.");
+        toast.error("Invalid email or password. Please try again.");
       } else {
-        alert("Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-fill remembered email on component mount
-  useState(() => {
+  // Auto-fill remembered email on mount
+  useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
       setForm(prev => ({ ...prev, email: rememberedEmail }));
@@ -178,26 +183,11 @@ export default function Login() {
         <div className="text-center mt-3">
           <small className="text-muted">
             Demo Credentials:<br />
-            Email: test@example.com | Password: 123456
+            Email: test@example.com | Password: 123456<br />
+            <strong>Admin:</strong> admin@example.com | Password: Admin@123
           </small>
         </div>
       </form>
-      
-      {/* Debug info - remove in production */}
-      <div className="mt-3 text-center small text-muted">
-        <p>API Base URL: {process.env.REACT_APP_API_URL || 'Not set'}</p>
-        <button 
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => {
-            console.log('Current form:', form);
-            console.log('Access Token:', localStorage.getItem('accessToken'));
-            console.log('Refresh Token:', localStorage.getItem('refreshToken'));
-            console.log('User Info:', localStorage.getItem('userInfo'));
-          }}
-        >
-          Debug Info
-        </button>
-      </div>
     </div>
   );
 }

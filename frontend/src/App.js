@@ -10,6 +10,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import Cart from './pages/Cart';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AdminDashboard from './pages/AdminDashboard';
+import UserDashboard from './pages/UserDashboard'; // Create this too
+import AdminRoute from './components/AdminRoute';
+
+import ProtectedRoute from './components/ProtectedRoute'; // Your existing
+
 
 function App() {
 
@@ -29,6 +35,30 @@ function App() {
            <Route path="/login" element={<Login />} />
 <Route path="/register" element={<Register />} />
 
+  {/* Protected User Routes */}
+        <Route path="/user/dashboard" element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes - Double Protection */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute>
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          </ProtectedRoute>
+        } />
+        
+        {/* More admin routes */}
+        <Route path="/admin/users" element={
+          <ProtectedRoute>
+            <AdminRoute>
+              {/* Users management page */}
+            </AdminRoute>
+          </ProtectedRoute>
+        } />
          
 
       </Routes>
