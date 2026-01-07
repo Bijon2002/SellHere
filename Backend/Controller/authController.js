@@ -1,12 +1,27 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 
-// Generate JWT Token
-const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-}
+// ==================== TOKEN GENERATORS ====================
+// Generate Access Token (15 minutes)
+const generateAccessToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: '15m'  // Short-lived: 15 minutes
+  });
+};
 
-// REGISTER USER
+// Generate Refresh Token (7 days)
+const generateRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '7d'   // Long-lived: 7 days
+  });
+};
+
+// Old token generator (keep for backward compatibility or remove)
+// const generateToken = (id, role) => {
+//   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+// }
+
+// ==================== REGISTER USER ====================
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password, role, profilePic, dob, phone } = req.body;
@@ -40,8 +55,9 @@ exports.registerUser = async (req, res) => {
       lastLogin: new Date()
     });
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
+    // Generate BOTH tokens
+    const accessToken = generateAccessToken(user._id, user.role);
+    const refreshToken = generateRefreshToken(user._id);
 
     // Send response
     res.status(201).json({
@@ -56,7 +72,8 @@ exports.registerUser = async (req, res) => {
         dob: user.dob,
         phone: user.phone,
         isActive: user.isActive,
-        token: token
+        accessToken: accessToken,    // 15 minutes
+        refreshToken: refreshToken   // 7 days
       }
     });
 
@@ -87,7 +104,7 @@ exports.registerUser = async (req, res) => {
   }
 }
 
-// LOGIN USER
+// ==================== LOGIN USER ====================
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -132,8 +149,9 @@ exports.loginUser = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
+    // Generate BOTH tokens
+    const accessToken = generateAccessToken(user._id, user.role);
+    const refreshToken = generateRefreshToken(user._id);
 
     // Send response
     res.json({
@@ -150,7 +168,8 @@ exports.loginUser = async (req, res) => {
         isActive: user.isActive,
         emailVerified: user.emailVerified,
         lastLogin: user.lastLogin,
-        token: token
+        accessToken: accessToken,    // 15 minutes
+        refreshToken: refreshToken   // 7 days
       }
     });
 
@@ -163,7 +182,95 @@ exports.loginUser = async (req, res) => {
   }
 }
 
-// GET USER PROFILE (Protected route)
+// ==================== REFRESH TOKEN ====================
+// @desc    Refresh access token
+// @route   POST /api/v1/auth/refresh-token
+// @access  Public (needs valid refresh token)
+exports.refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token is required'
+      });
+    }
+    
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    
+    // Find user
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Generate new access token
+    const newAccessToken = generateAccessToken(user._id, user.role);
+    
+    res.json({
+      success: true,
+      accessToken: newAccessToken,
+      message: 'Access token refreshed successfully'
+    });
+    
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token'
+      });
+    }
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token expired. Please login again.'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// ==================== LOGOUT ====================
+// @desc    Logout user
+// @route   POST /api/v1/auth/logout
+// @access  Private
+exports.logout = async (req, res) => {
+  try {
+    // Note: For proper logout, you might want to:
+    // 1. Store refresh tokens in DB and delete them here
+    // 2. Maintain a blacklist of tokens
+    // For now, just return success - frontend clears tokens
+    
+    res.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// ==================== GET USER PROFILE ====================
+// @desc    Get user profile (Protected route)
+// @route   GET /api/v1/auth/me
+// @access  Private
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password -passwordResetToken -passwordResetExpires');
@@ -188,7 +295,10 @@ exports.getUserProfile = async (req, res) => {
   }
 }
 
-// UPDATE USER PROFILE (Protected route)
+// ==================== UPDATE USER PROFILE ====================
+// @desc    Update user profile (Protected route)
+// @route   PUT /api/v1/auth/profile
+// @access  Private
 exports.updateUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -214,10 +324,10 @@ exports.updateUserProfile = async (req, res) => {
 
     const updatedUser = await user.save();
 
-    // Generate new token if email or password changed
-    let token;
+    // Generate new access token if email or password changed
+    let accessToken;
     if (req.body.email || req.body.password) {
-      token = generateToken(updatedUser._id, updatedUser.role);
+      accessToken = generateAccessToken(updatedUser._id, updatedUser.role);
     }
 
     res.json({
@@ -232,7 +342,7 @@ exports.updateUserProfile = async (req, res) => {
         dob: updatedUser.dob,
         phone: updatedUser.phone,
         isActive: updatedUser.isActive,
-        token: token || req.headers.authorization?.split(' ')[1]
+        accessToken: accessToken || req.headers.authorization?.split(' ')[1]
       }
     });
   } catch (error) {

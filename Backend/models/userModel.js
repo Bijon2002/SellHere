@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema({
   lastLogin: { type: Date },
   passwordResetToken: { type: String },
   passwordResetExpires: { type: Date },
+    refreshToken: { type: String },
+  refreshTokenExpires: { type: Date },
 }, { timestamps: true });
 
 // SIMPLIFIED version - works without next parameter issues

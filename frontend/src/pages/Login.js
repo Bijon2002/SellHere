@@ -1,64 +1,203 @@
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import API from "../api/axiosConfig";  // Updated import
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    email: "",
+    password: ""
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      alert("All fields required");
+    // Validation
+    if (!form.email || !form.password) {
+      alert("Please enter both email and password");
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const { data } = await axios.post(
-         process.env.REACT_APP_API_URL + "/auth/login",
-        { email, password }
-      );
+      // Use API instead of axios directly
+      const { data } = await API.post('/auth/login', form);
 
-      // Save token + role
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      if (data.success) {
+        // Save BOTH tokens and user info
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("userInfo", JSON.stringify({
+          _id: data.data._id,
+          name: data.data.name,
+          email: data.data.email,
+          role: data.data.role,
+          profilePic: data.data.profilePic,
+          isActive: data.data.isActive
+        }));
 
-      navigate("/");
+        // If remember me is checked, also save to localStorage (or cookies for longer)
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", form.email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+
+        alert(`✅ Welcome back, ${data.data.name}!`);
+        navigate("/");
+      } else {
+        alert(data.message || "Login failed");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      console.error("Login error:", err);
+      
+      // Show specific error messages
+      if (err.response?.data?.message) {
+        alert(err.response.data.message);
+      } else if (err.message.includes("Network Error")) {
+        alert("Cannot connect to server. Please check if backend is running.");
+      } else if (err.response?.status === 401) {
+        alert("Invalid email or password. Please try again.");
+      } else {
+        alert("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Auto-fill remembered email on component mount
+  useState(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      setForm(prev => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
+
   return (
     <div className="wrapper">
-      <form onSubmit={submitHandler} className="shadow rounded bg-white">
-        <h2 className="mb-4 text-center" style={{ color: '#73152e' }}>Login</h2>
+      <form onSubmit={submitHandler} className="shadow rounded bg-white p-4">
+        <h2 className="mb-4 text-center" style={{ color: '#73152e' }}>Login to Your Account</h2>
+        
         <div className="form-group mb-3">
+          <label className="form-label">Email Address *</label>
           <input
             type="email"
+            name="email"
             className="form-control"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            value={form.email}
+            onChange={handleChange}
             required
+            disabled={loading}
           />
         </div>
+        
         <div className="form-group mb-3">
+          <label className="form-label">Password *</label>
           <input
             type="password"
+            name="password"
             className="form-control"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            value={form.password}
+            onChange={handleChange}
             required
+            disabled={loading}
           />
         </div>
-        <button type="submit" className="btn btn-block w-100">Login</button>
+        
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              disabled={loading}
+            />
+            <label className="form-check-label" htmlFor="rememberMe">
+              Remember me
+            </label>
+          </div>
+          
+          <Link 
+            to="/forgot-password" 
+            style={{ color: '#73152e', textDecoration: 'none', fontSize: '0.9rem' }}
+          >
+            Forgot Password?
+          </Link>
+        </div>
+        
+        <button 
+          type="submit" 
+          className="btn btn-primary w-100 py-2"
+          disabled={loading}
+          style={{ backgroundColor: '#73152e', borderColor: '#73152e' }}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
+        </button>
+        
+        <div className="text-center mt-4">
+          <span className="text-muted">Don't have an account?{" "}</span>
+          <Link 
+            to="/register" 
+            style={{ color: '#73152e', textDecoration: 'none' }}
+          >
+            <strong>Create Account</strong>
+          </Link>
+        </div>
+        
         <div className="text-center mt-3">
-          <span>Don't have an account? <a href="/register">Register</a></span>
+          <small className="text-muted">
+            Demo Credentials:<br />
+            Email: test@example.com | Password: 123456
+          </small>
         </div>
       </form>
+      
+      {/* Debug info - remove in production */}
+      <div className="mt-3 text-center small text-muted">
+        <p>API Base URL: {process.env.REACT_APP_API_URL || 'Not set'}</p>
+        <button 
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => {
+            console.log('Current form:', form);
+            console.log('Access Token:', localStorage.getItem('accessToken'));
+            console.log('Refresh Token:', localStorage.getItem('refreshToken'));
+            console.log('User Info:', localStorage.getItem('userInfo'));
+          }}
+        >
+          Debug Info
+        </button>
+      </div>
     </div>
   );
 }

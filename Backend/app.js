@@ -20,6 +20,11 @@ app.use('/api/v1/products', products);
 app.use('/api/v1/orders', orders); 
 app.use('/api/v1/auth', authRoutes);
 
+app.get('/', (req, res) => {
+  res.send('API is running 🚀');
+});
+
+
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode.`);
 });

@@ -3,7 +3,9 @@ const {
   registerUser, 
   loginUser,
   getUserProfile,
-  updateUserProfile 
+  updateUserProfile,
+  refreshToken,
+  logout
 } = require('../Controller/authController');
 const { isAuthenticated } = require('../middleware/authMiddleware');
 const router = express.Router();
@@ -11,6 +13,8 @@ const router = express.Router();
 // Public routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/refresh-token', refreshToken);
+router.post('/logout', logout);
 
 // Protected routes (require authentication)
 router.get('/me', isAuthenticated, getUserProfile);      // Get user profile
