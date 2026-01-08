@@ -2,7 +2,7 @@ import Headers from './components/Header';
 import Footer from './components/footer';
 import './App.css';
 import Home from './pages/Home';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import ProductDetail from './pages/productDetail';
 import { useState } from 'react';
 import {ToastContainer} from 'react-toastify';
@@ -16,26 +16,29 @@ import AdminRoute from './components/AdminRoute';
 
 import ProtectedRoute from './components/ProtectedRoute'; // Your existing
 
-
-function App() {
-
+function AppContent() {
   const [cartItems, setCartItems] = useState([]);
+  const location = useLocation();
+  
+  // Check if current path is an admin route
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <div className="App">
-           
-      <Router>
-        <div>
-          <ToastContainer theme='dark' position='top-center' />
-           <Headers cartItems={cartItems} />
+      <ToastContainer theme='dark' position='top-center' />
+      
+      {/* Only show Header on non-admin routes */}
+      {!isAdminRoute && <Headers cartItems={cartItems} />}
+      
       <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetail cartItems={cartItems} setCartItems={setCartItems} />} />
-           <Route path="/cart" element={<Cart cartItems={cartItems} setCartItems={setCartItems} />} />
-           <Route path="/login" element={<Login />} />
-<Route path="/register" element={<Register />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Home />} />
+        <Route path="/product/:id" element={<ProductDetail cartItems={cartItems} setCartItems={setCartItems} />} />
+        <Route path="/cart" element={<Cart cartItems={cartItems} setCartItems={setCartItems} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-  {/* Protected User Routes */}
+        {/* Protected User Routes */}
         <Route path="/user/dashboard" element={
           <ProtectedRoute>
             <UserDashboard />
@@ -59,15 +62,19 @@ function App() {
             </AdminRoute>
           </ProtectedRoute>
         } />
-         
-
       </Routes>
-        </div>
-      </Router>
-  
-      <Footer />
-
+      
+      {/* Only show Footer on non-admin routes */}
+      {!isAdminRoute && <Footer />}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 
