@@ -14,7 +14,10 @@ const authRoutes = require('./Routes/authRoutes');
 // app.use('/api/v1/admin',adminSetup);
 
 const adminRoutes = require('./Routes/adminRoutes');
+
 app.use('/api/v1/admin', adminRoutes);
+
+
 
 
 

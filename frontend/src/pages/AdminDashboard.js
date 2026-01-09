@@ -107,7 +107,14 @@ export default function AdminDashboard() {
               <button
                 key={item.id}
                 className={`nav-btn ${activeTab === item.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+  if (item.id === 'users') {
+    navigate('/admin/users');
+  } else {
+    setActiveTab(item.id);
+  }
+}}
+
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>

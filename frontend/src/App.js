@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard'; // Create this too
 import AdminRoute from './components/AdminRoute';
+import AdminUsers from './pages/AdminUsers'; // New admin users management page
 
 import ProtectedRoute from './components/ProtectedRoute'; // Your existing
 
@@ -58,7 +59,7 @@ function AppContent() {
         <Route path="/admin/users" element={
           <ProtectedRoute>
             <AdminRoute>
-              {/* Users management page */}
+              <AdminUsers />
             </AdminRoute>
           </ProtectedRoute>
         } />
