@@ -86,7 +86,7 @@ export default function AdminDashboard() {
           <h1 className="portal-title">Admin Control</h1>
           <div className="nav-right">
             <button className="logout-btn" onClick={handleLogout}>
-              Logout
+              Logout !
             </button>
           </div>
         </div>
